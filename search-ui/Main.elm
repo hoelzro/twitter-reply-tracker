@@ -1,27 +1,39 @@
 import Html exposing (Html, div, input, label, text)
-import Html.Attributes exposing (id, for, type_)
+import Html.Attributes exposing (id, for, type_, value)
+import Html.Events exposing (onInput)
 
-type alias Model = ()
-type alias Msg = ()
+type alias Model = {
+    searchQuery : String
+  }
+type Msg =
+  UpdateSearchQuery String
+
+initialModel : Model
+initialModel = { searchQuery = "" }
 
 init : (Model, Cmd Msg)
-init = ((), Cmd.none)
+init = (initialModel, Cmd.none)
+
+noCmd : Model -> (Model, Cmd msg)
+noCmd model = (model, Cmd.none)
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg model = ((), Cmd.none)
+update msg model =
+  case msg of
+    UpdateSearchQuery newQuery -> noCmd <| { model | searchQuery = newQuery }
 
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.none
 
 searchBar : Model -> Html Msg
-searchBar model =
+searchBar { searchQuery } =
   div [] [
     label [for "q"] [ text "Search: "],
-    input [id "q", type_ "text"] []
+    input [id "q", type_ "text", value searchQuery, onInput UpdateSearchQuery ] []
   ]
 
 searchResults : Model -> Html Msg
-searchResults _ = text "results"
+searchResults { searchQuery } = text searchQuery
 
 view : Model -> Html Msg
 view model = div [] [
