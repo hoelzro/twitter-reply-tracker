@@ -18,13 +18,33 @@ interface SearchResults {
     search_metadata: SearchMetadata;
 }
 
+let decryptedKeys = {};
+
+async function kmsDecrypt(key : string) : Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+        if(decryptedKeys.hasOwnProperty(key)) {
+            resolve(decryptedKeys[key]);
+        } else {
+            let kms = new AWS.KMS();
+            kms.decrypt({ CiphertextBlob: new Buffer(process.env[key], 'base64') }, (err, data) => {
+                if(err) {
+                    reject(err);
+                    return;
+                }
+                decryptedKeys[key] = (data.Plaintext as Buffer).toString('ascii');
+                resolve(decryptedKeys[key]);
+            });
+        }
+    });
+}
+
 async function performSearch(sinceId : string, maxId : string) : Promise<SearchResults> {
     return new Promise<SearchResults>(async function(resolve, reject) {
         let tw = new Twitter({
-          consumerKey: process.env.TWITTER_CONSUMER_KEY,
-          consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-          accessToken: process.env.TWITTER_ACCESS_TOKEN,
-          accessTokenSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+          consumerKey: await kmsDecrypt('TWITTER_CONSUMER_KEY'),
+          consumerSecret: await kmsDecrypt('TWITTER_CONSUMER_SECRET'),
+          accessToken: await kmsDecrypt('TWITTER_ACCESS_TOKEN'),
+          accessTokenSecret: await kmsDecrypt('TWITTER_ACCESS_TOKEN_SECRET'),
         });
 
         let params : any = {
