@@ -84,6 +84,40 @@ function updateLatestMaxId(db, maxId) {
     });
 }
 
+function stripMentions(text, mentions) {
+    let pieces = [];
+    let startIndex = 0;
+
+    for(let [start, end] of mentions) {
+        pieces.push(text.substring(startIndex, start));
+        startIndex = end + 1;
+    }
+
+    pieces.push(text.substring(startIndex, text.length));
+    return pieces.join('');
+}
+
+function insertIntoRepliesTable(db, status) {
+    db.putItem({
+        TableName: 'reply_status_ids',
+        Item: {
+            'status_id': {
+                S: status.id_str
+            },
+            'full_text': {
+                S: stripMentions(status.full_text, status.entities.user_mentions.map((mention) => mention.indices))
+            },
+            'author': {
+                S: status.user.screen_name
+            }
+        }
+    }, (err, _) => {
+        if(err) {
+            console.warn(err, err.stack);
+        }
+    });
+}
+
 async function main() {
     if('AWS_REGION' in process.env) {
         AWS.config.update({
@@ -106,7 +140,7 @@ async function main() {
 
             for(let status of results.statuses) {
                 if(status.in_reply_to_status_id_str == conversationStart) {
-                    console.log(status.id_str);
+                    insertIntoRepliesTable(db, status);
                 }
             }
 
