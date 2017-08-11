@@ -1,8 +1,9 @@
 port module Main exposing (main)
 
 import Html exposing (Html, div, input, label, li, text, ul)
-import Html.Attributes exposing (id, for, type_, value)
+import Html.Attributes exposing (id, for, property, type_, value)
 import Html.Events exposing (onInput)
+import Json.Encode
 
 type alias Model = {
     searchQuery : String,
@@ -45,7 +46,7 @@ searchBar { searchQuery } =
 searchResults : Model -> Html Msg
 searchResults { searchResults } =
   ul [] <|
-    List.map (\s -> li [] [ text s ]) searchResults
+    List.map (\s -> li [property "innerHTML" <| Json.Encode.string s] []) searchResults
 
 view : Model -> Html Msg
 view model = div [] [
