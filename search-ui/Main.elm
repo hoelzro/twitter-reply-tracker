@@ -18,6 +18,8 @@ port performSearch : String -> Cmd msg
 
 port incomingSearchResults : (List String -> msg) -> Sub msg
 
+port loadTweets : () -> Cmd msg
+
 initialModel : Model
 initialModel = { searchQuery = "", searchResults = [] }
 
@@ -31,7 +33,7 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     UpdateSearchQuery   newQuery   -> ({ model | searchQuery = newQuery }, performSearch newQuery)
-    UpdateSearchResults newResults -> noCmd <| { model | searchResults = newResults }
+    UpdateSearchResults newResults -> ({ model | searchResults = newResults }, loadTweets ())
 
 subscriptions : Model -> Sub Msg
 subscriptions _ = incomingSearchResults UpdateSearchResults

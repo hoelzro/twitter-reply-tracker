@@ -9,6 +9,8 @@
         </script>
         <script type='text/javascript' src='saved-index.js'>
         </script>
+        <script type='text/javascript' src='https://platform.twitter.com/widgets.js'>
+        </script>
     </head>
     <body>
         <div id='elm'>
@@ -21,6 +23,13 @@
             app.ports.performSearch.subscribe(function(query) {
                 var results = index.search(query);
                 app.ports.incomingSearchResults.send(results.map((match) => savedHtml[match.ref]));
+            });
+
+            app.ports.loadTweets.subscribe(function() {
+                setTimeout(function() {
+                    // XXX rate limit?
+                    twttr.widgets.load();
+                }, 500);
             });
         </script>
     </body>
