@@ -1,7 +1,10 @@
-let lunr = require('lunr');
-let process = require('process');
+// vim:sts=4 sw=4
+
+import * as process from 'process';
+import * as AWS from 'aws-sdk';
+
 let stdout = process.stdout;
-let AWS = require('aws-sdk');
+let lunr = require('lunr');
 
 AWS.config.update({
     region: process.env.AWS_REGION
