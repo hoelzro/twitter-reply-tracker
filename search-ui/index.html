@@ -9,7 +9,15 @@
         </div>
 
         <script type='text/javascript'>
-            Elm.Main.embed(document.getElementById('elm'));
+            var app = Elm.Main.embed(document.getElementById('elm'));
+
+            app.ports.performSearch.subscribe(function(query) {
+                if(query.indexOf('foo') >= 0) {
+                    app.ports.incomingSearchResults.send(['foo', 'bar', 'baz']);
+                } else {
+                    app.ports.incomingSearchResults.send(['no results']);
+                }
+            });
         </script>
     </body>
 </html>
