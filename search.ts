@@ -1,6 +1,7 @@
 // vim:sts=4 sw=4
 
 import { Twitter } from 'twitter-node-client';
+import * as AWS from 'aws-sdk';
 import * as process from 'process';
 
 interface Status {
@@ -41,12 +42,48 @@ async function performSearch(sinceId : string, maxId : string) : Promise<SearchR
     });
 }
 
+async function loadLastSinceId(db) : Promise<string> {
+    return new Promise<string>(function(resolve, _) {
+        db.getItem({
+            TableName: 'reply_status_ids',
+            Key: {
+                'status_id': {
+                    S: 'latest_max_id'
+                }
+            }
+        }, (err, data) => {
+            if(err) {
+                console.warn(err, err.stack);
+                resolve(null);
+            } else {
+                if('Item' in data) {
+                    resolve(data.Item.latest_max_id.S);
+                } else {
+                    resolve(null);
+                }
+            }
+        });
+    });
+}
+
 async function main() {
+    if('AWS_REGION' in process.env) {
+        AWS.config.update({
+            region: process.env.AWS_REGION
+        });
+    }
+
+    let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
+    let sinceId : string = await loadLastSinceId(db);
     const conversationStart = '889004724669661184';
     let maxId : string = null;
 
+    if(sinceId == null) {
+        sinceId = conversationStart;
+    }
+
     while(true) {
-        let results = await performSearch(conversationStart, maxId);
+        let results = await performSearch(sinceId, maxId);
 
         for(let status of results.statuses) {
             if(status.in_reply_to_status_id_str == conversationStart) {
