@@ -3,20 +3,22 @@
         <title>Twitter Reply Search UI</title>
         <script type='text/javascript' src='elm.js'>
         </script>
+        <script type='text/javascript' src='lunr.js'>
+        </script>
+        <script type='text/javascript' src='saved-index.js'>
+        </script>
     </head>
     <body>
         <div id='elm'>
         </div>
 
         <script type='text/javascript'>
+            var index = lunr.Index.load(savedIndexData);
             var app = Elm.Main.embed(document.getElementById('elm'));
 
             app.ports.performSearch.subscribe(function(query) {
-                if(query.indexOf('foo') >= 0) {
-                    app.ports.incomingSearchResults.send(['foo', 'bar', 'baz']);
-                } else {
-                    app.ports.incomingSearchResults.send(['no results']);
-                }
+                var results = index.search(query);
+                app.ports.incomingSearchResults.send(results.map((match) => match.ref));
             });
         </script>
     </body>
