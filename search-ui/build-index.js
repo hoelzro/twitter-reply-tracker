@@ -1,17 +1,33 @@
 let lunr = require('lunr');
 let process = require('process');
 let stdout = process.stdout;
+let AWS = require('aws-sdk');
 
-let index = lunr(function() {
-    this.ref('status_id');
-    this.field('author');
-    this.field('full_text');
-
-    this.add({
-        status_id: 'https://twitter.com/hoelzro/status/890551057708969984',
-        author: 'hoelzro',
-        full_text: "I'm always happy to share knowledge about text processing, shell tips & tricks, Git arcana, C & Lua, and low level Linux stuff!"
-    });
+AWS.config.update({
+    region: process.env.AWS_REGION
 });
-stdout.write('var savedIndexData =\n');
-stdout.write(JSON.stringify(index) + ';');
+
+let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
+db.scan({TableName: 'reply_status_ids'}, (err, data) => {
+    if(err) {
+        console.warn(err, err.stack);
+    } else {
+        let index = lunr(function() {
+            this.ref('url');
+            this.field('author');
+            this.field('full_text');
+
+            for(let item of data.Items) {
+                if(item.status_id.S != 'latest_max_id') {
+                    this.add({
+                        url: 'https://twitter.com/' + item.author.S + '/status/' + item.status_id.S,
+                        author: item.author.S,
+                        full_text: item.full_text.S
+                    });
+                }
+            }
+        });
+        stdout.write('var savedIndexData =\n');
+        stdout.write(JSON.stringify(index) + ';');
+    }
+});
