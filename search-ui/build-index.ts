@@ -25,7 +25,7 @@ async function getTableItems(db, tableName: string) : Promise<any> {
 
 async function renderStatus(statusUrl) {
     return new Promise((resolve, reject) => {
-        https.get('https://publish.twitter.com/oembed?url=' + statusUrl, (res) => {
+        https.get('https://publish.twitter.com/oembed?url=' + statusUrl + '&omit_script=true&hide_thread=true', (res) => {
             // XXX handle failure
             let body = '';
             res.on('data', (chunk) => { body += chunk });
