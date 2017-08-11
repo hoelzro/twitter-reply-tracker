@@ -1,15 +1,24 @@
+port module Main exposing (main)
+
 import Html exposing (Html, div, input, label, text)
 import Html.Attributes exposing (id, for, type_, value)
 import Html.Events exposing (onInput)
 
 type alias Model = {
-    searchQuery : String
+    searchQuery : String,
+    searchResults : List String
   }
+
 type Msg =
-  UpdateSearchQuery String
+      UpdateSearchQuery String
+    | UpdateSearchResults (List String)
+
+port performSearch : String -> Cmd msg
+
+port incomingSearchResults : (List String -> msg) -> Sub msg
 
 initialModel : Model
-initialModel = { searchQuery = "" }
+initialModel = { searchQuery = "", searchResults = [] }
 
 init : (Model, Cmd Msg)
 init = (initialModel, Cmd.none)
@@ -20,10 +29,11 @@ noCmd model = (model, Cmd.none)
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    UpdateSearchQuery newQuery -> noCmd <| { model | searchQuery = newQuery }
+    UpdateSearchQuery   newQuery   -> ({ model | searchQuery = newQuery }, performSearch newQuery)
+    UpdateSearchResults newResults -> noCmd <| { model | searchResults = newResults }
 
 subscriptions : Model -> Sub Msg
-subscriptions _ = Sub.none
+subscriptions _ = incomingSearchResults UpdateSearchResults
 
 searchBar : Model -> Html Msg
 searchBar { searchQuery } =
