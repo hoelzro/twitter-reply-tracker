@@ -28,6 +28,7 @@ async function renderStatus(statusUrl) {
         https.get('https://publish.twitter.com/oembed?url=' + statusUrl + '&omit_script=true&hide_thread=true', (res) => {
             // XXX handle failure
             let body = '';
+            res.setEncoding('utf8');
             res.on('data', (chunk) => { body += chunk });
             res.on('end', () => {
                 resolve(JSON.parse(body).html);
