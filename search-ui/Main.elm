@@ -1,6 +1,6 @@
 port module Main exposing (main)
 
-import Html exposing (Html, div, input, label, li, text, ul)
+import Html exposing (Html, div, input, label, text, span)
 import Html.Attributes exposing (id, for, property, type_, value)
 import Html.Events exposing (onInput)
 import Json.Encode
@@ -47,8 +47,8 @@ searchBar { searchQuery } =
 
 searchResults : Model -> Html Msg
 searchResults { searchResults } =
-  ul [] <|
-    List.map (\s -> li [property "innerHTML" <| Json.Encode.string s] []) searchResults
+  div [] <|
+    List.map (\s -> span [property "innerHTML" <| Json.Encode.string s] []) searchResults
 
 view : Model -> Html Msg
 view model = div [] [
