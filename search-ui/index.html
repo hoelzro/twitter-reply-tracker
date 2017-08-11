@@ -25,12 +25,19 @@
                 app.ports.incomingSearchResults.send(results.map((match) => savedHtml[match.ref]));
             });
 
-            app.ports.loadTweets.subscribe(function() {
-                setTimeout(function() {
-                    // XXX rate limit?
-                    twttr.widgets.load();
-                }, 500);
-            });
+            (function() {
+                var loadTweetTimer = undefined;
+
+                app.ports.loadTweets.subscribe(function() {
+                    if(loadTweetTimer !== undefined) {
+                        clearTimeout(loadTweetTimer);
+                    }
+                    loadTweetTimer = setTimeout(function() {
+                        loadTweetTimer = undefined;
+                        twttr.widgets.load();
+                    }, 500);
+                });
+            })();
         </script>
     </body>
 </html>
