@@ -7,7 +7,6 @@ This is a project that provides code meant to be run on AWS Lambda for tracking 
 Writing this was inspired by the following tweet:
 
 <blockquote class="twitter-tweet" data-conversation="none" data-lang="en"><p lang="en" dir="ltr">For people who are in a position to give help: Post to your timeline every now &amp; then that you&#39;re open to questions. That makes a difference</p>&mdash; Stephanie Hurlburt (@sehurlburt) <a href="https://twitter.com/sehurlburt/status/889004724669661184">July 23, 2017</a></blockquote>
-<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 I thought it was really great how Stephanie was using her clout to bring people together, but found it difficult to find people who had replied, volunteering their expertise.  So I wrote this!
 
