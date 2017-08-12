@@ -49,7 +49,7 @@ subscriptions _ = Sub.batch [
 searchBar : Model -> Html Msg
 searchBar { searchQuery } =
   div [class "row"] [
-    div [class "two columns"] [ label [for "q"] [ text "Search: "] ],
+    div [class "two columns"] [ label [for "q"] [ text "Search replies: "] ],
     div [class "ten columns"] [ input [id "q", type_ "text", value searchQuery, onInput UpdateSearchQuery ] [] ]
   ]
 
