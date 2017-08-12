@@ -12,11 +12,11 @@ I thought it was really great how Stephanie was using her clout to bring people 
 
 # Deploying
 
-If you're interested in modifying this code and deploying it for yourself, please raise an issue in the [issue tracker](issues).
+If you're interested in modifying this code and deploying it for yourself, please raise an issue in the [issue tracker](https://github.com/hoelzro/twitter-reply-tracker/issues).
 
 # Components
 
-There are two pieces of this application - the [lambda code to refresh search replies](), and the [search UI]().
+There are two pieces of this application - the [lambda code to refresh search replies](https://github.com/hoelzro/twitter-reply-tracker/tree/master/lambda-search-function), and the [search UI](https://github.com/hoelzro/twitter-reply-tracker/tree/master/search-ui).
 
 # Room for Improvement
 
