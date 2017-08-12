@@ -53,10 +53,14 @@
                     }, 500);
                 });
 
-                twttr.events.bind('loaded', (ev) => {
-                    if(ev.widgets.length > 0) {
-                        app.ports.tweetWidgetsLoading.send(false);
-                    }
+                twttr.ready(function(twttr) {
+                    twttr.widgets.load();
+
+                    twttr.events.bind('loaded', (ev) => {
+                        if(ev.widgets.length > 0) {
+                            app.ports.tweetWidgetsLoading.send(false);
+                        }
+                    });
                 });
             })();
         </script>
