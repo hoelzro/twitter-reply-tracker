@@ -18,6 +18,10 @@ If you're interested in modifying this code and deploying it for yourself, pleas
 
 There are two pieces of this application - the [lambda code to refresh search replies](https://github.com/hoelzro/twitter-reply-tracker/tree/master/lambda-search-function), and the [search UI](https://github.com/hoelzro/twitter-reply-tracker/tree/master/search-ui).
 
+# If You Replied...
+
+...and don't see your reply on the search UI, please file an issue on the [issue tracker](https://github.com/hoelzro/twitter-reply-tracker/issues) and I'll work to remedy that.
+
 # Room for Improvement
 
 There's plenty of room for improvement in this application, namely:
