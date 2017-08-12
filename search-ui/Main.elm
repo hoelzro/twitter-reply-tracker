@@ -7,12 +7,14 @@ import Json.Encode
 
 type alias Model = {
     searchQuery : String,
-    searchResults : List String
+    searchResults : List String,
+    loadingTweets : Bool
   }
 
 type Msg =
       UpdateSearchQuery String
     | UpdateSearchResults (List String)
+    | SetWidgetLoadingState Bool
 
 port performSearch : String -> Cmd msg
 
@@ -20,8 +22,10 @@ port incomingSearchResults : (List String -> msg) -> Sub msg
 
 port loadTweets : () -> Cmd msg
 
+port tweetWidgetsLoading : (Bool -> msg) -> Sub msg
+
 initialModel : Model
-initialModel = { searchQuery = "", searchResults = [] }
+initialModel = { searchQuery = "", searchResults = [], loadingTweets = False }
 
 init : (Model, Cmd Msg)
 init = (initialModel, Cmd.none)
@@ -32,11 +36,15 @@ noCmd model = (model, Cmd.none)
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    UpdateSearchQuery   newQuery   -> ({ model | searchQuery = newQuery }, performSearch newQuery)
-    UpdateSearchResults newResults -> ({ model | searchResults = newResults }, loadTweets ())
+    UpdateSearchQuery   newQuery        -> ({ model | searchQuery = newQuery }, performSearch newQuery)
+    UpdateSearchResults newResults      -> ({ model | searchResults = newResults }, loadTweets ())
+    SetWidgetLoadingState loadingTweets -> noCmd <| { model | loadingTweets = loadingTweets }
 
 subscriptions : Model -> Sub Msg
-subscriptions _ = incomingSearchResults UpdateSearchResults
+subscriptions _ = Sub.batch [
+    incomingSearchResults UpdateSearchResults,
+    tweetWidgetsLoading SetWidgetLoadingState
+  ]
 
 searchBar : Model -> Html Msg
 searchBar { searchQuery } =
