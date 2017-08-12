@@ -26,6 +26,7 @@ There are two pieces of this application - the [lambda code to refresh search re
 
 There's plenty of room for improvement in this application, namely:
 
+  * It could use a code of conduct - I'm new to this, so I would appreciate suggestions!
   * It needs lots of documentation on how to deploy - I'll try to work on this first. =)
   * It needs better error handling.
   * It's not yet mobile friendly - this is partially UI, partially how heavy it is coming over the wire.
