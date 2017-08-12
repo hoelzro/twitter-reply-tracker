@@ -138,7 +138,6 @@ function insertIntoRepliesTable(db, status) {
     });
 }
 
-export
 async function main() {
     if('AWS_REGION' in process.env) {
         AWS.config.update({
@@ -182,4 +181,11 @@ async function main() {
         }
 
     }
+}
+
+export
+function handler(event, context, callback) {
+    main().then(
+        (result) => callback(null, result),
+        (err)    => callback(err));
 }
