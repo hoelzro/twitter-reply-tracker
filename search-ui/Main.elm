@@ -1,7 +1,7 @@
 port module Main exposing (main)
 
 import Html exposing (Html, div, input, label, text, span)
-import Html.Attributes exposing (id, for, property, style, type_, value)
+import Html.Attributes exposing (class, id, for, property, style, type_, value)
 import Html.Events exposing (onInput)
 import Json.Encode
 
@@ -48,9 +48,9 @@ subscriptions _ = Sub.batch [
 
 searchBar : Model -> Html Msg
 searchBar { searchQuery } =
-  div [] [
-    label [for "q"] [ text "Search: "],
-    input [id "q", type_ "text", value searchQuery, onInput UpdateSearchQuery ] []
+  div [class "row"] [
+    div [class "two columns"] [ label [for "q"] [ text "Search: "] ],
+    div [class "ten columns"] [ input [id "q", type_ "text", value searchQuery, onInput UpdateSearchQuery ] [] ]
   ]
 
 searchResults : Model -> Html Msg
@@ -60,7 +60,7 @@ searchResults { searchResults, loadingTweets } =
     List.map (\s -> span [property "innerHTML" <| Json.Encode.string s] []) searchResults
 
 view : Model -> Html Msg
-view model = div [] [
+view model = div [class "container"] [
     searchBar model,
     searchResults model
   ]
