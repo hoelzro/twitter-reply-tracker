@@ -1,7 +1,7 @@
 port module Main exposing (main)
 
 import Html exposing (Html, div, input, label, text, span)
-import Html.Attributes exposing (id, for, property, type_, value)
+import Html.Attributes exposing (id, for, property, style, type_, value)
 import Html.Events exposing (onInput)
 import Json.Encode
 
@@ -54,8 +54,9 @@ searchBar { searchQuery } =
   ]
 
 searchResults : Model -> Html Msg
-searchResults { searchResults } =
-  div [] <|
+searchResults { searchResults, loadingTweets } =
+  let attrs = if loadingTweets then [style [("visibility", "hidden")]] else []
+  in div attrs <|
     List.map (\s -> span [property "innerHTML" <| Json.Encode.string s] []) searchResults
 
 view : Model -> Html Msg
