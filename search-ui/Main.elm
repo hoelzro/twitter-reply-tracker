@@ -37,7 +37,7 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     UpdateSearchQuery   newQuery        -> ({ model | searchQuery = newQuery }, performSearch newQuery)
-    UpdateSearchResults newResults      -> ({ model | searchResults = newResults }, loadTweets ())
+    UpdateSearchResults newResults      -> ({ model | searchResults = newResults, loadingTweets = True }, loadTweets ())
     SetWidgetLoadingState loadingTweets -> noCmd <| { model | loadingTweets = loadingTweets }
 
 subscriptions : Model -> Sub Msg

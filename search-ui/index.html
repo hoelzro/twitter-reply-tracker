@@ -33,7 +33,6 @@
                         clearTimeout(loadTweetTimer);
                     }
                     loadTweetTimer = setTimeout(function() {
-                        app.ports.tweetWidgetsLoading.send(true);
                         loadTweetTimer = undefined;
                         twttr.widgets.load();
                     }, 500);
