@@ -4,6 +4,12 @@ import * as https from 'https';
 import * as process from 'process';
 import * as AWS from 'aws-sdk';
 
+const TOKEN_WHITELIST = {
+    'C#': true,
+    'C++': true,
+    '.NET': true,
+};
+
 let stdout = process.stdout;
 let lunr = require('lunr');
 
@@ -37,6 +43,14 @@ async function renderStatus(statusUrl) {
     });
 }
 
+function customTrimmer(token) {
+    if(TOKEN_WHITELIST.hasOwnProperty(token.toString().toUpperCase())) {
+        return token;
+    }
+
+    return token.update((s) => s.replace(/^\W+/, '').replace(/\W+$/, ''));
+}
+
 async function main() {
     let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
     let results = await getTableItems(db, 'reply_status_ids');
@@ -60,6 +74,9 @@ async function main() {
         this.ref('id');
         this.field('author');
         this.field('full_text');
+
+        this.pipeline.before(lunr.trimmer, customTrimmer);
+        this.pipeline.remove(lunr.trimmer);
 
         for(let doc of documents) {
             this.add(doc);
