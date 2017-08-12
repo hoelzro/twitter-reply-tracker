@@ -29,6 +29,7 @@ There's plenty of room for improvement in this application, namely:
   * It could use a code of conduct - I'm new to this, so I would appreciate suggestions!
   * It needs lots of documentation on how to deploy - I'll try to work on this first. =)
   * It needs better error handling.
+  * It could be a whole lot prettier.
   * It's not yet mobile friendly - this is partially UI, partially how heavy it is coming over the wire.
   * It's written in Elm, which isn't a problem in and of itself, but it results in heavier generated JS files, which impacts mobile users.
   * It's specific to Stephanie and her tweet - I would like to make the code more generic, as well as make multiple tweets' replies available on a single UI.
