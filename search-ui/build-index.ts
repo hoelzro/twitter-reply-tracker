@@ -56,15 +56,28 @@ async function main() {
 
     documents = await Promise.all(documents);
 
-    let index = lunr(function() {
-        this.ref('id');
-        this.field('author');
-        this.field('full_text');
+    let builder = new lunr.Builder();
 
-        for(let doc of documents) {
-            this.add(doc);
-        }
-    });
+    builder.pipeline.add(
+        lunr.trimmer,
+        lunr.stopWordFilter,
+        lunr.stemmer
+    );
+
+    builder.searchPipeline.add(
+        lunr.stemmer
+    );
+
+    builder.ref('id');
+    builder.field('author');
+    builder.field('full_text');
+
+    for(let doc of documents) {
+        builder.add(doc);
+    }
+
+    let index = builder.build();
+
     stdout.write('var savedHtml =\n');
     stdout.write(JSON.stringify(documentHtml) + ';\n');
     stdout.write('var savedIndexData =\n');
