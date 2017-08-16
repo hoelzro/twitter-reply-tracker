@@ -85,13 +85,13 @@ async function performSearch(sinceId : string, maxId : string) : Promise<SearchR
 }
 
 export
-async function loadLastSinceId(db) : Promise<string> {
+async function loadLastSinceId(db, key : string) : Promise<string> {
     return new Promise<string>(function(resolve, _) {
         db.getItem({
             TableName: 'reply_status_ids',
             Key: {
                 'status_id': {
-                    S: 'latest_max_id'
+                    S: key
                 }
             }
         }, (err, data) => {

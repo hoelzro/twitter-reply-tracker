@@ -12,7 +12,7 @@ async function main() {
     }
 
     let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
-    let sinceId : string = await loadLastSinceId(db); // XXX here
+    let sinceId : string = await loadLastSinceId(db, 'latest_max_id');
     let maxId : string = null;
 
     if(sinceId == null) {
