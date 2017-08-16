@@ -56,6 +56,7 @@ async function kmsDecrypt(key : string) : Promise<string> {
     });
 }
 
+export
 async function performSearch(sinceId : string, maxId : string) : Promise<SearchResults> {
     return new Promise<SearchResults>(async function(resolve, reject) {
         let tw = new Twitter({
@@ -80,6 +81,7 @@ async function performSearch(sinceId : string, maxId : string) : Promise<SearchR
     });
 }
 
+export
 async function loadLastSinceId(db) : Promise<string> {
     return new Promise<string>(function(resolve, _) {
         db.getItem({
@@ -104,6 +106,7 @@ async function loadLastSinceId(db) : Promise<string> {
     });
 }
 
+export
 function updateLatestMaxId(db, maxId) {
     db.putItem({
         TableName: 'reply_status_ids',
@@ -135,6 +138,7 @@ function stripMentions(text, mentions) {
     return pieces.join('');
 }
 
+export
 function insertIntoRepliesTable(db, status) {
     db.putItem({
         TableName: 'reply_status_ids',
@@ -154,56 +158,4 @@ function insertIntoRepliesTable(db, status) {
             console.warn(err, err.stack);
         }
     });
-}
-
-async function main() {
-    if('AWS_REGION' in process.env) {
-        AWS.config.update({
-            region: process.env.AWS_REGION
-        });
-    }
-
-    let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
-    let sinceId : string = await loadLastSinceId(db);
-    const conversationStart = '889004724669661184';
-    let maxId : string = null;
-
-    if(sinceId == null) {
-        sinceId = conversationStart;
-    }
-
-    try {
-        while(true) {
-            let results = await performSearch(sinceId, maxId);
-
-            for(let status of results.statuses) {
-                if(status.in_reply_to_status_id_str == conversationStart) {
-                    insertIntoRepliesTable(db, status);
-                }
-            }
-
-            let next_results = results.search_metadata.next_results;
-            if(next_results === undefined) {
-                break;
-            }
-            let match = /max_id=(\d+)/.exec(next_results);
-
-            if(!match) {
-                throw new Error("Unable to extract max_id from " + next_results);
-            }
-            maxId = match[1];
-        }
-    } finally {
-        if(maxId != null) {
-            updateLatestMaxId(db, maxId);
-        }
-
-    }
-}
-
-export
-function handler(event, context, callback) {
-    main().then(
-        (result) => callback(null, result),
-        (err)    => callback(err));
 }
