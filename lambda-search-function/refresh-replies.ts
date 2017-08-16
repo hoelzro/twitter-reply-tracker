@@ -1,6 +1,6 @@
 // vim:sts=4 sw=4
 
-import { loadLastSinceId, insertIntoRepliesTable, updateLatestMaxId, performSearch } from './search';
+import { conversationStart, loadLastSinceId, insertIntoRepliesTable, updateLatestMaxId, performSearch } from './search';
 import * as AWS from 'aws-sdk';
 import * as process from 'process';
 
@@ -13,7 +13,6 @@ async function main() {
 
     let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
     let sinceId : string = await loadLastSinceId(db); // XXX here
-    const conversationStart = '889004724669661184';
     let maxId : string = null;
 
     if(sinceId == null) {

@@ -22,6 +22,9 @@ import { Twitter } from 'twitter-node-client';
 import * as AWS from 'aws-sdk';
 import * as process from 'process';
 
+export
+const conversationStart = '889004724669661184';
+
 interface Status {
     in_reply_to_status_id_str: string;
     id_str: string;
