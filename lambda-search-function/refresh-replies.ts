@@ -1,6 +1,6 @@
 // vim:sts=4 sw=4
 
-import { conversationStart, loadLastSinceId, insertIntoRepliesTable, updateLatestMaxId, performSearch } from './search';
+import { conversationStart, loadLastSinceId, insertIntoRepliesTable, updateLatestMaxId, performSearch } from './common';
 import * as AWS from 'aws-sdk';
 import * as process from 'process';
 
