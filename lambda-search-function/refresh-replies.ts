@@ -26,7 +26,7 @@ async function main() {
             insertIntoRepliesTable(db, status);
         }
     }
-    //updateLatestMaxId(db, outMaxId.maxId, 'latest_max_id');
+    updateLatestMaxId(db, outMaxId.maxId, 'latest_max_id');
 
 }
 

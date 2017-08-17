@@ -131,12 +131,12 @@ async function loadLastSinceId(db, key : string) : Promise<string> {
 }
 
 export
-function updateLatestMaxId(db, maxId) {
+function updateLatestMaxId(db, maxId, key : string) {
     db.putItem({
         TableName: 'reply_status_ids',
         Item: {
             'status_id': {
-                S: 'latest_max_id'
+                S: key
             },
             'latest_max_id': {
                 S: maxId
