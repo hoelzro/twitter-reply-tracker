@@ -28,6 +28,8 @@ const conversationStart = '889004724669661184';
 interface Status {
     in_reply_to_status_id_str: string;
     id_str: string;
+
+    quoted_status: Status;
 }
 
 interface SearchMetadata {
