@@ -5,6 +5,8 @@ import * as AWS from 'aws-sdk';
 import * as process from 'process';
 
 async function main() {
+    (Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
+
     if('AWS_REGION' in process.env) {
         AWS.config.update({
             region: process.env.AWS_REGION
@@ -19,33 +21,9 @@ async function main() {
         sinceId = conversationStart;
     }
 
-    try {
-        while(true) {
-            let results = await performSearch(sinceId, maxId); // XXX here
-
-            for(let status of results.statuses) {
-                if(status.in_reply_to_status_id_str == conversationStart) { // XXX here
-                    console.log(status.id_str);
-                    insertIntoRepliesTable(db, status);
-                }
-            }
-
-            let next_results = results.search_metadata.next_results;
-            if(next_results === undefined) {
-                break;
-            }
-            let match = /max_id=(\d+)/.exec(next_results);
-
-            if(!match) {
-                throw new Error("Unable to extract max_id from " + next_results);
-            }
-            maxId = match[1];
+    for await (let status of performSearch(conversationStart, maxId)) {
+        if(status.in_reply_to_status_id_str == conversationStart) { // XXX here
         }
-    } finally {
-        if(maxId != null) {
-            updateLatestMaxId(db, maxId); // XXX here
-        }
-
     }
 }
 

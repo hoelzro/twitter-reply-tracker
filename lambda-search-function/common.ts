@@ -59,8 +59,7 @@ async function kmsDecrypt(key : string) : Promise<string> {
     });
 }
 
-export
-async function performSearch(sinceId : string, maxId : string) : Promise<SearchResults> {
+async function performSingleSearch(sinceId, maxId) {
     return new Promise<SearchResults>(async function(resolve, reject) {
         let tw = new Twitter({
           consumerKey: await kmsDecrypt('TWITTER_CONSUMER_KEY'),
@@ -82,6 +81,27 @@ async function performSearch(sinceId : string, maxId : string) : Promise<SearchR
 
         tw.getSearch(params, reject, (results) => resolve(JSON.parse(results)));
     });
+}
+
+export
+async function* performSearch(sinceId : string, maxId : string) {
+    // XXX throw error and see if it gets caught on the outside
+    //     how do I inform the outer loop what the maxId ends up being?
+    while(true) {
+        let results = await performSingleSearch(sinceId, maxId);
+        yield* results.statuses;
+
+        let next_results = results.search_metadata.next_results;
+        if(next_results === undefined) {
+            break;
+        }
+        let match = /max_id=(\d+)/.exec(next_results);
+
+        if(!match) {
+            throw new Error("Unable to extract max_id from " + next_results);
+        }
+        maxId = match[1];
+    }
 }
 
 export
