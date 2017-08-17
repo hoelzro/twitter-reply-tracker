@@ -84,9 +84,9 @@ async function performSingleSearch(sinceId, maxId) {
 }
 
 export
-async function* performSearch(sinceId : string, maxId : string) {
+async function* performSearch(sinceId : string, outMaxId : any) {
     // XXX throw error and see if it gets caught on the outside
-    //     how do I inform the outer loop what the maxId ends up being?
+    let maxId : string = null;
     while(true) {
         let results = await performSingleSearch(sinceId, maxId);
         yield* results.statuses;
@@ -102,6 +102,7 @@ async function* performSearch(sinceId : string, maxId : string) {
         }
         maxId = match[1];
     }
+    outMaxId.maxId = maxId;
 }
 
 export

@@ -15,16 +15,19 @@ async function main() {
 
     let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
     let sinceId : string = await loadLastSinceId(db, 'latest_max_id');
-    let maxId : string = null;
+    let outMaxId = { maxId : null};
 
     if(sinceId == null) {
         sinceId = conversationStart;
     }
 
-    for await (let status of performSearch(conversationStart, maxId)) {
-        if(status.in_reply_to_status_id_str == conversationStart) { // XXX here
+    for await (let status of performSearch(conversationStart, outMaxId)) {
+        if(status.in_reply_to_status_id_str == conversationStart) {
+            insertIntoRepliesTable(db, status);
         }
     }
+    //updateLatestMaxId(db, outMaxId.maxId, 'latest_max_id');
+
 }
 
 export
