@@ -36,5 +36,3 @@ function handler(event, context, callback) {
         (result) => callback(null, result),
         (err)    => callback(err));
 }
-
-main(); // XXX DEBUG
