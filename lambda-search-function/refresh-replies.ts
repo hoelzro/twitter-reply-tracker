@@ -21,7 +21,7 @@ async function main() {
         sinceId = conversationStart;
     }
 
-    for await (let status of performSearch(conversationStart, outMaxId)) {
+    for await (let status of performSearch('to:sehurlburt', conversationStart, outMaxId)) {
         if(status.in_reply_to_status_id_str == conversationStart) {
             insertIntoRepliesTable(db, status);
         }

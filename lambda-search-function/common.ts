@@ -59,7 +59,7 @@ async function kmsDecrypt(key : string) : Promise<string> {
     });
 }
 
-async function performSingleSearch(sinceId, maxId) {
+async function performSingleSearch(query : string, sinceId, maxId) {
     return new Promise<SearchResults>(async function(resolve, reject) {
         let tw = new Twitter({
           consumerKey: await kmsDecrypt('TWITTER_CONSUMER_KEY'),
@@ -69,7 +69,7 @@ async function performSingleSearch(sinceId, maxId) {
         });
 
         let params : any = {
-            q: 'to:sehurlburt',
+            q: query,
             count: 100,
             since_id: sinceId,
             tweet_mode: 'extended'
@@ -84,11 +84,11 @@ async function performSingleSearch(sinceId, maxId) {
 }
 
 export
-async function* performSearch(sinceId : string, outMaxId : any) {
+async function* performSearch(query : string, sinceId : string, outMaxId : any) {
     // XXX throw error and see if it gets caught on the outside
     let maxId : string = null;
     while(true) {
-        let results = await performSingleSearch(sinceId, maxId);
+        let results = await performSingleSearch(query, sinceId, maxId);
         yield* results.statuses;
 
         let next_results = results.search_metadata.next_results;
