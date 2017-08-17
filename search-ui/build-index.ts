@@ -78,7 +78,7 @@ async function main() {
     let docId = 0;
 
     for(let item of results.Items) {
-        if(item.status_id.S != 'latest_max_id') {
+        if(item.status_id.S != 'latest_max_id' && item.status_id.S != 'quote_latest_max_id') {
             let statusUrl = 'https://twitter.com/' + item.author.S + '/status/' + item.status_id.S;
             let id = docId++;
             documents.push(renderStatus(statusUrl).then((html) => { documentHtml[id] = html; return { id: id, author: item.author.S, full_text: item.full_text.S } }));
