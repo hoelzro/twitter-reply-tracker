@@ -28,6 +28,7 @@
   },
   "files": [
       "common.ts",
-      "refresh-replies.ts"
+      "refresh-replies.ts",
+      "refresh-quote-replies.ts"
   ]
 }
