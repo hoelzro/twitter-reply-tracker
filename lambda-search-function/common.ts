@@ -22,9 +22,6 @@ import * as Twitter from 'twitter';
 import * as AWS from 'aws-sdk';
 import * as process from 'process';
 
-export
-const conversationStart = '889004724669661184';
-
 interface Status {
     in_reply_to_status_id_str: string;
     id_str: string;
@@ -114,11 +111,14 @@ async function* performSearch(query : string, sinceId : string, outMaxId : any) 
 }
 
 export
-async function loadLastSinceId(db, key : string) : Promise<string> {
+async function loadLastSinceId(db, targetScreenName, targetStatusId, key : string) : Promise<string> {
     return new Promise<string>(function(resolve, _) {
         db.getItem({
             TableName: 'twitter_replies',
             Key: {
+                'screen_name_and_replied_to_status': {
+                    S: targetScreenName + '/' + targetStatusId
+                },
                 'status_id': {
                     S: key
                 }
@@ -139,10 +139,17 @@ async function loadLastSinceId(db, key : string) : Promise<string> {
 }
 
 export
-function updateLatestMaxId(db, maxId, key : string) {
+function updateLatestMaxId(db, targetScreenName, targetStatusId, maxId, key : string) {
+    if(maxId == null) {
+        return;
+    }
+
     db.putItem({
         TableName: 'twitter_replies',
         Item: {
+            'screen_name_and_replied_to_status': {
+                S: targetScreenName + '/' + targetStatusId
+            },
             'status_id': {
                 S: key
             },
@@ -171,10 +178,13 @@ function stripMentions(text, mentions) {
 }
 
 export
-function insertIntoRepliesTable(db, status) {
+function insertIntoRepliesTable(targetScreenName, targetStatusId, db, status) {
     db.putItem({
         TableName: 'twitter_replies',
         Item: {
+            'screen_name_and_replied_to_status': {
+                S: targetScreenName + '/' + targetStatusId
+            },
             'status_id': {
                 S: status.id_str
             },

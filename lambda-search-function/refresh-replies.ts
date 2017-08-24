@@ -18,11 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { conversationStart, loadLastSinceId, insertIntoRepliesTable, updateLatestMaxId, performSearch } from './common';
+import { loadLastSinceId, insertIntoRepliesTable, updateLatestMaxId, performSearch } from './common';
 import * as AWS from 'aws-sdk';
 import * as process from 'process';
 
-async function main() {
+async function main(targetScreenName, targetStatusId) {
     (Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
 
     if('AWS_REGION' in process.env) {
@@ -32,25 +32,28 @@ async function main() {
     }
 
     let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
-    let sinceId : string = await loadLastSinceId(db, 'latest_max_id');
+    let sinceId : string = await loadLastSinceId(db, targetScreenName, targetStatusId, 'latest_max_id');
     let outMaxId = { maxId : null};
 
     if(sinceId == null) {
-        sinceId = conversationStart;
+        sinceId = targetStatusId;
     }
 
-    for await (let status of performSearch('to:sehurlburt', conversationStart, outMaxId)) {
-        if(status.in_reply_to_status_id_str == conversationStart) {
-            insertIntoRepliesTable(db, status);
+    for await (let status of performSearch('to:' + targetScreenName, targetStatusId, outMaxId)) {
+        if(status.in_reply_to_status_id_str == targetStatusId) {
+            insertIntoRepliesTable(targetScreenName, targetStatusId, db, status);
         }
     }
-    updateLatestMaxId(db, outMaxId.maxId, 'latest_max_id');
+    updateLatestMaxId(db, targetScreenName, targetStatusId, outMaxId.maxId, 'latest_max_id');
 
 }
 
 export
 function handler(event, context, callback) {
-    main().then(
+    let targetScreenName = process.env.TARGET_SCREEN_NAME;
+    let targetStatusId = process.env.TARGET_STATUS_ID;
+
+    main(targetScreenName, targetStatusId).then(
         (result) => callback(null, result),
         (err)    => callback(err));
 }
