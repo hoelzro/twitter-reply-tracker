@@ -1,6 +1,6 @@
 {
   "dependencies": {
     "aws-sdk": "^2.96.0",
-    "twitter-node-client": "0.0.6"
+    "twitter": "^1.7.1"
   }
 }

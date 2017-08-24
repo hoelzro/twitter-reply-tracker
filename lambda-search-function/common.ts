@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Twitter } from 'twitter-node-client';
+import * as Twitter from 'twitter';
 import * as AWS from 'aws-sdk';
 import * as process from 'process';
 
@@ -64,10 +64,10 @@ async function kmsDecrypt(key : string) : Promise<string> {
 async function performSingleSearch(query : string, sinceId, maxId) {
     return new Promise<SearchResults>(async function(resolve, reject) {
         let tw = new Twitter({
-          consumerKey: await kmsDecrypt('TWITTER_CONSUMER_KEY'),
-          consumerSecret: await kmsDecrypt('TWITTER_CONSUMER_SECRET'),
-          accessToken: await kmsDecrypt('TWITTER_ACCESS_TOKEN'),
-          accessTokenSecret: await kmsDecrypt('TWITTER_ACCESS_TOKEN_SECRET'),
+          consumer_key: await kmsDecrypt('TWITTER_CONSUMER_KEY'),
+          consumer_secret: await kmsDecrypt('TWITTER_CONSUMER_SECRET'),
+          access_token_key: await kmsDecrypt('TWITTER_ACCESS_TOKEN'),
+          access_token_secret: await kmsDecrypt('TWITTER_ACCESS_TOKEN_SECRET'),
         });
 
         let params : any = {
@@ -81,7 +81,13 @@ async function performSingleSearch(query : string, sinceId, maxId) {
             params.max_id = maxId;
         }
 
-        tw.getSearch(params, reject, (results) => resolve(JSON.parse(results)));
+        tw.get('search/tweets', params, (error, tweets, response) => {
+            if(error) {
+                return reject(error);
+            }
+            // pass response headers in somehow? or just CW the thing here?
+            resolve(tweets);
+        });
     });
 }
 
