@@ -117,7 +117,7 @@ export
 async function loadLastSinceId(db, key : string) : Promise<string> {
     return new Promise<string>(function(resolve, _) {
         db.getItem({
-            TableName: 'reply_status_ids',
+            TableName: 'twitter_replies',
             Key: {
                 'status_id': {
                     S: key
@@ -141,7 +141,7 @@ async function loadLastSinceId(db, key : string) : Promise<string> {
 export
 function updateLatestMaxId(db, maxId, key : string) {
     db.putItem({
-        TableName: 'reply_status_ids',
+        TableName: 'twitter_replies',
         Item: {
             'status_id': {
                 S: key
@@ -173,7 +173,7 @@ function stripMentions(text, mentions) {
 export
 function insertIntoRepliesTable(db, status) {
     db.putItem({
-        TableName: 'reply_status_ids',
+        TableName: 'twitter_replies',
         Item: {
             'status_id': {
                 S: status.id_str
