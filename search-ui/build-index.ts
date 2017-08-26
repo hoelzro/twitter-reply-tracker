@@ -137,4 +137,9 @@ async function main(targetScreenName, targetStatusId) {
 
 }
 
-main().then((value) => {}, (err) => console.log(err));
+export
+function handler(context, event, callback) {
+    main(process.env.TARGET_SCREEN_NAME, process.env.TARGET_STATUS_ID).then(
+        (result) => callback(null, result),
+        (err)    => callback(err));
+}
