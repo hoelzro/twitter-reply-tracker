@@ -59,6 +59,10 @@ async function getTableItems(db, targetScreenName : string, targetStatusId : str
 async function renderStatus(statusUrl) {
     return new Promise((resolve, reject) => {
         https.get('https://publish.twitter.com/oembed?url=' + statusUrl + '&omit_script=true&hide_thread=true', (res) => {
+            if(res.statusCode == 404) {
+                return resolve(null);
+            }
+
             // XXX handle failure
             let body = '';
             res.setEncoding('utf8');
@@ -109,7 +113,7 @@ async function main(targetScreenName, targetStatusId) {
         if(item.status_id.S != 'latest_max_id' && item.status_id.S != 'quote_latest_max_id') {
             let statusUrl = 'https://twitter.com/' + item.author.S + '/status/' + item.status_id.S;
             let id = docId++;
-            documents.push(renderStatus(statusUrl).then((html) => { documentHtml[id] = html; return { id: id, author: item.author.S, full_text: item.full_text.S } }));
+            documents.push(renderStatus(statusUrl).then((html) => { if(html == null) { return; } documentHtml[id] = html; return { id: id, author: item.author.S, full_text: item.full_text.S } }));
             documentHtml.push(null);
         }
     }
@@ -125,6 +129,9 @@ async function main(targetScreenName, targetStatusId) {
         this.pipeline.remove(lunr.trimmer);
 
         for(let doc of documents) {
+            if(doc == null) {
+                continue;
+            }
             this.add(doc);
         }
     });
