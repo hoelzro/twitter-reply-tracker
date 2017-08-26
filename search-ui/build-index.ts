@@ -93,9 +93,9 @@ async function uploadToS3(key, content) {
             Body: content
         }, (err, data) => {
             if(err) {
-                console.warn(err);
+                reject(err);
             } else {
-                console.log(data);
+                resolve(data);
             }
         });
     });
