@@ -35,9 +35,19 @@ AWS.config.update({
     region: process.env.AWS_REGION
 });
 
-async function getTableItems(db, tableName: string) : Promise<any> {
+async function getTableItems(db, targetScreenName : string, targetStatusId : string, tableName: string) : Promise<any> {
     return new Promise<any>((resolve, reject) => {
-        db.scan({TableName: tableName}, (err, data) => {
+        let params = {
+            TableName: tableName,
+            FilterExpression: 'screen_name_and_replied_to_status = :s',
+            ExpressionAttributeValues: {
+                ':s': {
+                    S: targetScreenName + '/' + targetStatusId
+                }
+            }
+        };
+
+        db.scan(params, (err, data) => {
             if(err) {
                 reject(err);
             } else {
@@ -69,9 +79,9 @@ function customTrimmer(token) {
     return token.update((s) => s.replace(/^\W+/, '').replace(/\W+$/, ''));
 }
 
-async function main() {
+async function main(targetScreenName, targetStatusId) {
     let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
-    let results = await getTableItems(db, 'reply_status_ids');
+    let results = await getTableItems(db, targetScreenName, targetStatusId, 'twitter_replies');
 
     let documents = [];
     let documentHtml = [];
