@@ -28,7 +28,6 @@ const TOKEN_WHITELIST = {
     '.NET': true,
 };
 
-let stdout = process.stdout;
 let lunr = require('lunr');
 
 AWS.config.update({
@@ -79,6 +78,25 @@ function customTrimmer(token) {
     return token.update((s) => s.replace(/^\W+/, '').replace(/\W+$/, ''));
 }
 
+async function uploadToS3(key, content) {
+    let s3 = new AWS.S3({apiVersion: '2006-03-01'});
+    return new Promise((resolve, reject) => {
+        s3.putObject({
+            Bucket: 'twitter-reply-tracker',
+            Key: key,
+            ACL: 'public-read',
+            ContentType: 'application/javascript',
+            Body: content
+        }, (err, data) => {
+            if(err) {
+                console.warn(err);
+            } else {
+                console.log(data);
+            }
+        });
+    });
+}
+
 async function main(targetScreenName, targetStatusId) {
     let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
     let results = await getTableItems(db, targetScreenName, targetStatusId, 'twitter_replies');
@@ -110,10 +128,13 @@ async function main(targetScreenName, targetStatusId) {
             this.add(doc);
         }
     });
-    stdout.write('var savedHtml =\n');
-    stdout.write(JSON.stringify(documentHtml) + ';\n');
-    stdout.write('var savedIndexData =\n');
-    stdout.write(JSON.stringify(index) + ';');
+    let content = 'var savedHtml =\n' +
+        JSON.stringify(documentHtml) + ';\n' +
+        'var savedIndexData =\n' +
+        JSON.stringify(index) + ';';
+
+    return await uploadToS3(targetScreenName + '/' + targetStatusId + '/saved-index.js', content);
+
 }
 
 main().then((value) => {}, (err) => console.log(err));
