@@ -44,7 +44,7 @@ async function main(targetScreenName, targetStatusId) {
             insertIntoRepliesTable(targetScreenName, targetStatusId, db, status);
         }
     }
-    updateLatestMaxId(db, targetScreenName, targetStatusId, outMaxId.maxId, 'quote_latest_max_id');
+    await updateLatestMaxId(db, targetScreenName, targetStatusId, outMaxId.maxId, 'quote_latest_max_id');
 }
 
 export

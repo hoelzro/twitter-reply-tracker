@@ -39,12 +39,15 @@ async function main(targetScreenName, targetStatusId) {
         sinceId = targetStatusId;
     }
 
+    let promises = [];
+
     for await (let status of performSearch('to:' + targetScreenName, targetStatusId, outMaxId)) {
         if(status.in_reply_to_status_id_str == targetStatusId) {
-            insertIntoRepliesTable(targetScreenName, targetStatusId, db, status);
+            promises.push(insertIntoRepliesTable(targetScreenName, targetStatusId, db, status));
         }
     }
-    updateLatestMaxId(db, targetScreenName, targetStatusId, outMaxId.maxId, 'latest_max_id');
+    await Promise.all(promises);
+    await updateLatestMaxId(db, targetScreenName, targetStatusId, outMaxId.maxId, 'latest_max_id');
 
 }
 

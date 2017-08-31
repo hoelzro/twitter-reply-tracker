@@ -140,27 +140,30 @@ async function loadLastSinceId(db, targetScreenName, targetStatusId, key : strin
 
 export
 function updateLatestMaxId(db, targetScreenName, targetStatusId, maxId, key : string) {
-    if(maxId == null) {
-        return;
-    }
+    return new Promise((resolve, reject) => {
+        if(maxId == null) {
+            return resolve(true);
+        }
 
-    db.putItem({
-        TableName: 'twitter_replies',
-        Item: {
-            'screen_name_and_replied_to_status': {
-                S: targetScreenName + '/' + targetStatusId
-            },
-            'status_id': {
-                S: key
-            },
-            'latest_max_id': {
-                S: maxId
+        db.putItem({
+            TableName: 'twitter_replies',
+            Item: {
+                'screen_name_and_replied_to_status': {
+                    S: targetScreenName + '/' + targetStatusId
+                },
+                'status_id': {
+                    S: key
+                },
+                'latest_max_id': {
+                    S: maxId
+                }
             }
-        }
-    }, (err, _) => {
-        if(err) {
-            console.warn(err, err.stack);
-        }
+        }, (err, _) => {
+            if(err) {
+                return reject(err);
+            }
+            return resolve(true);
+        });
     });
 }
 
@@ -179,25 +182,28 @@ function stripMentions(text, mentions) {
 
 export
 function insertIntoRepliesTable(targetScreenName, targetStatusId, db, status) {
-    db.putItem({
-        TableName: 'twitter_replies',
-        Item: {
-            'screen_name_and_replied_to_status': {
-                S: targetScreenName + '/' + targetStatusId
-            },
-            'status_id': {
-                S: status.id_str
-            },
-            'full_text': {
-                S: stripMentions(status.full_text, status.entities.user_mentions.map((mention) => mention.indices))
-            },
-            'author': {
-                S: status.user.screen_name
+    return new Promise((resolve, reject) => {
+        db.putItem({
+            TableName: 'twitter_replies',
+            Item: {
+                'screen_name_and_replied_to_status': {
+                    S: targetScreenName + '/' + targetStatusId
+                },
+                'status_id': {
+                    S: status.id_str
+                },
+                'full_text': {
+                    S: stripMentions(status.full_text, status.entities.user_mentions.map((mention) => mention.indices))
+                },
+                'author': {
+                    S: status.user.screen_name
+                }
             }
-        }
-    }, (err, _) => {
-        if(err) {
-            console.warn(err, err.stack);
-        }
+        }, (err, _) => {
+            if(err) {
+                return reject(err);
+            }
+            return resolve(true);
+        });
     });
 }
