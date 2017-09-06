@@ -29,6 +29,8 @@
   "files": [
       "common.ts",
       "refresh-replies.ts",
-      "refresh-quote-replies.ts"
+      "refresh-quote-replies.ts",
+      "scheduler.ts",
+      "consumer.ts"
   ]
 }
