@@ -66,7 +66,7 @@ function handler(event, context, callback) {
     (Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.for("Symbol.asyncIterator");
 
     for(let record of event.Records) {
-        let payload = JSON.parse(new Buffer(record.kinesis.data, 'base64').toString('ascii'));
+        let payload = JSON.parse(record.Sns.Message);
 
         if(payload.type == 'replies') {
             addReplies(payload.screenName, payload.statusId).then(

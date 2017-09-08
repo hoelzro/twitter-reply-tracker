@@ -19,6 +19,7 @@
  */
 
 import * as AWS from 'aws-sdk';
+import * as process from 'process';
 
 let targetTweets = [
     ['sehurlburt', '889004724669661184'], // For people who are in a position to give help: Post to your timeline every now & then that you're open to questions. That makes a difference
@@ -26,13 +27,25 @@ let targetTweets = [
     ['b0rk',       '904699186238693376'], // what is your absolute favorite developer tool you use?
 ];
 
-const WORK_STREAM = 'twitter-reply-work';
+async function publishEvent(payload) {
+    let sns = new AWS.SNS({ apiVersion: '2010-03-31' });
+
+    return new Promise((resolve, reject) => {
+        sns.publish({
+            TopicArn: process.env.SNS_TOPIC_ARN,
+            Message: JSON.stringify(payload),
+        }, (err, response) => {
+            if(err != null) {
+                return reject(err);
+            }
+            resolve(response);
+        });
+    });
+}
 
 export
 function handler(event, context, callback) {
-    let kinesis = new AWS.Kinesis({ apiVersion: '2013-12-02' });
-
-    let records = [];
+    let promises = [];
 
     for(let [targetScreenName, targetStatusId] of targetTweets ) {
         for(let payloadType of ['replies', 'quoted-replies']) {
@@ -42,15 +55,11 @@ function handler(event, context, callback) {
                 statusId: targetStatusId,
             };
 
-            records.push({
-                Data: JSON.stringify(payload),
-                PartitionKey: '1',
-            });
+            promises.push(publishEvent(payload));
         }
     }
 
-    kinesis.putRecords({
-        StreamName: WORK_STREAM,
-        Records: records,
-    }, callback);
+    Promise.all(promises).then(
+        (response) => callback(null, true),
+        (err) => callback(err));
 }
