@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "aws-sdk": "^2.96.0",
-    "lunr": "^2.1.2"
+    "handlebars": "^4.0.10",
+    "lunr": "^2.1.2",
+    "twitter": "^1.7.1"
   }
 }
