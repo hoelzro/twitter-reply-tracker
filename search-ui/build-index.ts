@@ -57,8 +57,8 @@ async function getTableItems(db, targetScreenName : string, targetStatusId : str
     });
 }
 
-async function renderStatus(statusUrl) {
-    return new Promise((resolve, reject) => {
+async function renderStatus(statusUrl) : Promise<string> {
+    return new Promise<string>((resolve, reject) => {
         https.get('https://publish.twitter.com/oembed?url=' + statusUrl + '&omit_script=true&hide_thread=true', (res) => {
             if(res.statusCode == 404) {
                 return resolve(null);
