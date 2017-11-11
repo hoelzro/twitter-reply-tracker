@@ -121,10 +121,51 @@ async function main(targetScreenName, targetStatusId) {
     let docId = 0;
 
     for(let item of results.Items) {
-        if(item.status_id.S != 'latest_max_id' && item.status_id.S != 'quote_latest_max_id') {
+        if(item.status_id.S == 'latest_max_id' || item.status_id.S == 'quote_latest_max_id') {
+            continue;
+        }
+
+        let id = docId++;
+
+        if('html' in item) {
+            documentHtml.push(item.html.S);
+            documents.push(Promise.resolve({
+                id: id,
+                author: item.author.S,
+                full_text: item.full_text.S
+            }));
+        } else {
             let statusUrl = 'https://twitter.com/' + item.author.S + '/status/' + item.status_id.S;
-            let id = docId++;
-            documents.push(renderStatus(statusUrl).then((html) => { if(html == null) { return; } documentHtml[id] = html; return { id: id, author: item.author.S, full_text: item.full_text.S } }));
+            documents.push(renderStatus(statusUrl).then((html) => {
+                if(html == null) {
+                    return;
+                }
+                return new Promise(function(resolve, _) {
+                    db.updateItem({
+                        TableName: 'twitter_replies',
+                        Key: {
+                            'screen_name_and_replied_to_status': item.screen_name_and_replied_to_status,
+                            'status_id': item.status_id
+                        },
+                        UpdateExpression: 'set html = :h',
+                        ExpressionAttributeValues: {
+                            ':h': {
+                                S: html
+                            }
+                        }
+                    }, function(err, _) {
+                        if(err) {
+                            console.log('DynamoDB update error: ' + err);
+                        }
+                        documentHtml[id] = html;
+                        resolve({
+                            id: id,
+                            author: item.author.S,
+                            full_text: item.full_text.S
+                        })
+                    });
+                });
+            }));
             documentHtml.push(null);
         }
     }
