@@ -48,6 +48,7 @@ async function getTableItems(db, targetScreenName : string, targetStatusId : str
 
         db.scan(params, (err, data) => {
             if(err) {
+                console.log('DynamoDB error: ' + err);
                 reject(err);
             } else {
                 resolve(data);
@@ -68,7 +69,12 @@ async function renderStatus(statusUrl) {
             res.setEncoding('utf8');
             res.on('data', (chunk) => { body += chunk });
             res.on('end', () => {
-                resolve(JSON.parse(body).html);
+                try {
+                    resolve(JSON.parse(body).html);
+                } catch(e) {
+                    console.log('status render failure (status = ' + res.statusCode + ', body = ' + body + ')');
+                    reject(e);
+                }
             });
         });
     });
@@ -83,6 +89,7 @@ function customTrimmer(token) {
 }
 
 async function uploadToS3(key, content) {
+    console.log('Uploading ' + content.length + ' bytes to S3...');
     let s3 = new AWS.S3({apiVersion: '2006-03-01'});
     return new Promise((resolve, reject) => {
         s3.putObject({
@@ -93,8 +100,10 @@ async function uploadToS3(key, content) {
             Body: content
         }, (err, data) => {
             if(err) {
+                console.log('Error uploading: ' + err);
                 reject(err);
             } else {
+                console.log('Upload successful: ' + data);
                 resolve(data);
             }
         });
@@ -103,7 +112,9 @@ async function uploadToS3(key, content) {
 
 async function main(targetScreenName, targetStatusId) {
     let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
+    console.log('getting database items...');
     let results = await getTableItems(db, targetScreenName, targetStatusId, 'twitter_replies');
+    console.log('# results: ' + results.Items.length);
 
     let documents = [];
     let documentHtml = [];
@@ -118,8 +129,11 @@ async function main(targetScreenName, targetStatusId) {
         }
     }
 
+    console.log('waiting for all documents to render...');
     documents = await Promise.all(documents);
+    console.log('documents done rendering.');
 
+    console.log('building index...');
     let index = lunr(function() {
         this.ref('id');
         this.field('author');
@@ -135,6 +149,7 @@ async function main(targetScreenName, targetStatusId) {
             this.add(doc);
         }
     });
+    console.log('done building index.');
     let content = 'var savedHtml =\n' +
         JSON.stringify(documentHtml) + ';\n' +
         'var savedIndexData =\n' +
