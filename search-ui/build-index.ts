@@ -51,6 +51,9 @@ async function getTableItems(db, targetScreenName : string, targetStatusId : str
                 console.log('DynamoDB error: ' + err);
                 reject(err);
             } else {
+                if('LastEvaluatedKey' in data) {
+                    return reject("LastEvaluatedKey is present and I don't know how to handle it!");
+                }
                 resolve(data);
             }
         });
