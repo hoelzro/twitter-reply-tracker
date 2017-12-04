@@ -35,6 +35,25 @@ AWS.config.update({
 });
 
 async function getTableItems(db, targetScreenName : string, targetStatusId : string, tableName: string) : Promise<any> {
+    function performScan(params, accum, resolve, reject) {
+        db.scan(params, (err, data) => {
+            if(err) {
+                console.log('DynamoDB error: ' + err);
+                reject(err);
+            } else {
+                accum.Items = accum.Items.concat(data.Items);
+
+                if('LastEvaluatedKey' in data) {
+                    let newParams = Object.assign({}, params);
+                    newParams.ExclusiveStartKey = data.LastEvaluatedKey;
+                    performScan(newParams, accum, resolve, reject);
+                } else {
+                    resolve(accum);
+                }
+            }
+        });
+    }
+
     return new Promise<any>((resolve, reject) => {
         let params = {
             TableName: tableName,
@@ -46,17 +65,7 @@ async function getTableItems(db, targetScreenName : string, targetStatusId : str
             }
         };
 
-        db.scan(params, (err, data) => {
-            if(err) {
-                console.log('DynamoDB error: ' + err);
-                reject(err);
-            } else {
-                if('LastEvaluatedKey' in data) {
-                    return reject("LastEvaluatedKey is present and I don't know how to handle it!");
-                }
-                resolve(data);
-            }
-        });
+        performScan(params, {Items: []}, resolve, reject);
     });
 }
 
