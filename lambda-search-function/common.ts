@@ -45,15 +45,19 @@ async function kmsDecrypt(key : string) : Promise<string> {
         if(decryptedKeys.hasOwnProperty(key)) {
             resolve(decryptedKeys[key]);
         } else {
-            let kms = new AWS.KMS();
-            kms.decrypt({ CiphertextBlob: new Buffer(process.env[key], 'base64') }, (err, data) => {
-                if(err) {
-                    reject(err);
-                    return;
-                }
-                decryptedKeys[key] = (data.Plaintext as Buffer).toString('ascii');
-                resolve(decryptedKeys[key]);
-            });
+            if('AWS_LAMBDA_FUNCTION_NAME' in process.env) {
+                let kms = new AWS.KMS();
+                kms.decrypt({ CiphertextBlob: new Buffer(process.env[key], 'base64') }, (err, data) => {
+                    if(err) {
+                        reject(err);
+                        return;
+                    }
+                    decryptedKeys[key] = (data.Plaintext as Buffer).toString('ascii');
+                    resolve(decryptedKeys[key]);
+                });
+            } else {
+                resolve(process.env[key]);
+            }
         }
     });
 }
