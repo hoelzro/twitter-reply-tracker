@@ -21,7 +21,7 @@
 import { loadLastSinceId, insertIntoRepliesTable, updateLatestMaxId, performSearch } from './common';
 import * as AWS from 'aws-sdk';
 
-async function addReplies(targetScreenName, targetStatusId) {
+async function addReplies(context, targetScreenName, targetStatusId) {
     let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
     let sinceId : string = await loadLastSinceId(db, targetScreenName, targetStatusId, 'latest_max_id');
     let outMaxId = { maxId : null};
@@ -32,7 +32,7 @@ async function addReplies(targetScreenName, targetStatusId) {
 
     let promises = [];
 
-    for await (let status of performSearch('to:' + targetScreenName, targetStatusId, outMaxId)) {
+    for await (let status of performSearch(context, 'to:' + targetScreenName, targetStatusId, outMaxId)) {
         if(status.in_reply_to_status_id_str == targetStatusId) {
             promises.push(insertIntoRepliesTable(targetScreenName, targetStatusId, db, status));
         }
@@ -41,7 +41,7 @@ async function addReplies(targetScreenName, targetStatusId) {
     await updateLatestMaxId(db, targetScreenName, targetStatusId, outMaxId.maxId, 'latest_max_id');
 }
 
-async function addQuotedReplies(targetScreenName, targetStatusId) {
+async function addQuotedReplies(context, targetScreenName, targetStatusId) {
     let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
     let sinceId : string = await loadLastSinceId(db, targetScreenName, targetStatusId, 'quote_latest_max_id');
     let outMaxId = { maxId : null};
@@ -52,7 +52,7 @@ async function addQuotedReplies(targetScreenName, targetStatusId) {
 
     let promises = [];
 
-    for await (let status of performSearch('https://twitter.com/' + targetScreenName + '/status/' + targetStatusId, targetStatusId, outMaxId)) {
+    for await (let status of performSearch(context, 'https://twitter.com/' + targetScreenName + '/status/' + targetStatusId, targetStatusId, outMaxId)) {
         if(status.quoted_status && status.quoted_status.id_str == targetStatusId) {
             promises.push(insertIntoRepliesTable(targetScreenName, targetStatusId, db, status));
         }
@@ -69,11 +69,11 @@ function handler(event, context, callback) {
         let payload = JSON.parse(record.Sns.Message);
 
         if(payload.type == 'replies') {
-            addReplies(payload.screenName, payload.statusId).then(
+            addReplies(context, payload.screenName, payload.statusId).then(
                 (result) => callback(null, result),
                 (err)    => callback(err));
         } else if(payload.type == 'quoted-replies') {
-            addQuotedReplies(payload.screenName, payload.statusId).then(
+            addQuotedReplies(context, payload.screenName, payload.statusId).then(
                 (result) => callback(null, result),
                 (err)    => callback(err));
         } else {

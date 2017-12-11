@@ -93,9 +93,13 @@ async function performSingleSearch(query : string, sinceId, maxId) {
 }
 
 export
-async function* performSearch(query : string, sinceId : string, outMaxId : any) {
+async function* performSearch(context : any, query : string, sinceId : string, outMaxId : any) {
     let maxId : string = null;
     while(true) {
+        if(context.getRemainingTimeInMillis() < 10000) {
+            break;
+        }
+
         let results;
         try {
             results = await performSingleSearch(query, sinceId, maxId);
