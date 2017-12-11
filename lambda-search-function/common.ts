@@ -94,10 +94,18 @@ async function performSingleSearch(query : string, sinceId, maxId) {
 
 export
 async function* performSearch(query : string, sinceId : string, outMaxId : any) {
-    // XXX throw error and see if it gets caught on the outside
     let maxId : string = null;
     while(true) {
-        let results = await performSingleSearch(query, sinceId, maxId);
+        let results;
+        try {
+            results = await performSingleSearch(query, sinceId, maxId);
+        } catch(e) {
+            if('length' in e && e[0].code == 88) {
+                console.log('rate limit exceeded - stopping operation');
+                break;
+            }
+            throw e;
+        }
         yield* results.statuses;
 
         let next_results = results.search_metadata.next_results;
