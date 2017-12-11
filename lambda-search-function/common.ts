@@ -186,6 +186,12 @@ function stripMentions(text, mentions) {
 
 export
 function insertIntoRepliesTable(targetScreenName, targetStatusId, db, status) {
+    let stripped = stripMentions(status.full_text, status.entities.user_mentions.map((mention) => mention.indices));
+    if(stripped == '') {
+        // XXX should I return a promise here?
+        return Promise.resolve(true);
+    }
+
     return new Promise((resolve, reject) => {
         db.putItem({
             TableName: 'twitter_replies',
@@ -197,7 +203,7 @@ function insertIntoRepliesTable(targetScreenName, targetStatusId, db, status) {
                     S: status.id_str
                 },
                 'full_text': {
-                    S: stripMentions(status.full_text, status.entities.user_mentions.map((mention) => mention.indices))
+                    S: stripped
                 },
                 'author': {
                     S: status.user.screen_name
