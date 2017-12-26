@@ -35,11 +35,18 @@ AWS.config.update({
 });
 
 async function getTableItems(db, targetScreenName : string, targetStatusId : string, tableName: string) : Promise<any> {
-    function performScan(params, accum, resolve, reject) {
+    function performScan(params, accum, resolve, reject, backoff = 100) {
         db.scan(params, (err, data) => {
             if(err) {
-                console.log('DynamoDB error: ' + err);
-                reject(err);
+                if(err.code == 'ProvisionedThroughputExceededException') {
+                    console.log('throughput exceeded - sleeping ' + backoff + 'ms');
+                    setTimeout(function() {
+                        performScan(params, accum, resolve, reject, backoff * 2);
+                    }, 100);
+                } else {
+                    console.log('DynamoDB error: ' + err);
+                    reject(err);
+                }
             } else {
                 accum.Items = accum.Items.concat(data.Items);
 
