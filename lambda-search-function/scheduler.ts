@@ -25,7 +25,6 @@ let targetTweets = [
     ['sehurlburt', '889004724669661184'], // For people who are in a position to give help: Post to your timeline every now & then that you're open to questions. That makes a difference
     ['sehurlburt', '899482493925023744'], // What are some hobbies you have that have no direct relation to your career? "Just for fun" things.
     ['b0rk',       '904699186238693376'], // what is your absolute favorite developer tool you use?
-    ['xnulz',      '928857792982781952'], // Name a bitch badder than Taylor Swift
 ];
 
 async function publishEvent(payload) {
