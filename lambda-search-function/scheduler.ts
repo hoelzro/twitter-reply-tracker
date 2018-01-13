@@ -28,12 +28,12 @@ let targetTweets = [
     ['joeerl',     '951357931559284736'], // I’m interested in the forgotten ideas of computer science. Needed for a talk.  Can you post examples of great CS ideas that have been largely forgotten.  Examples: Linda tuple spaces, Boyer-Moore algorithm
 ];
 
-async function publishEvent(payload) {
+async function publishEvent(topicARN, payload) {
     let sns = new AWS.SNS({ apiVersion: '2010-03-31' });
 
     return new Promise((resolve, reject) => {
         sns.publish({
-            TopicArn: process.env.SNS_TOPIC_ARN,
+            TopicArn: topicARN,
             Message: JSON.stringify(payload),
         }, (err, response) => {
             if(err != null) {
@@ -89,7 +89,7 @@ async function scheduleNewTweets() {
                 statusId: targetStatusId,
             };
 
-            promises.push(publishEvent(payload));
+            promises.push(publishEvent(process.env.SNS_TOPIC_ARN, payload));
         }
     }
 
@@ -106,7 +106,7 @@ async function scheduleIndexes() {
             statusId: targetStatusId,
         };
 
-        promises.push(publishEvent(payload));
+        promises.push(publishEvent(process.env.SNS_TOPIC_ARN, payload));
     }
 
     return Promise.all(promises);
