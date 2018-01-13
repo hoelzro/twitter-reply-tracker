@@ -107,6 +107,76 @@ function customTrimmer(token) {
     return token.update((s) => s.replace(/^\W+/, '').replace(/\W+$/, ''));
 }
 
+async function s3GetObject(bucket, key) {
+    let s3 = new AWS.S3({apiVersion: '2006-03-01'});
+
+    return new Promise((resolve, reject) => {
+        let params = {
+            Bucket: bucket,
+            Key: key,
+        };
+
+        s3.getObject(params, (err, data) => {
+            if(err) {
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        });
+    });
+}
+
+async function s3ListObjects(bucket, prefix): Promise<Array<any>> {
+    let s3 = new AWS.S3({apiVersion: '2006-03-01'});
+
+    return new Promise<Array<any>>((resolve, reject) => {
+        let params = {
+            Bucket: bucket,
+            Prefix: prefix,
+        };
+
+        s3.listObjects(params, (err, data) => {
+            if(err) {
+                reject(err);
+            } else {
+                let keys = [];
+
+                for(let item of data.Contents) {
+                    keys.push(item.Key);
+                }
+                resolve(keys);
+            }
+        });
+    });
+}
+
+async function s3Copy(bucket, sourceKey, destKey) {
+    let s3 = new AWS.S3({apiVersion: '2006-03-01'});
+
+    if(destKey.endsWith('/')) {
+        let lastSlash = sourceKey.lastIndexOf('/');
+        let filename = lastSlash != -1 ? sourceKey.substring(lastSlash + 1) : sourceKey;
+        destKey += filename;
+    }
+
+    return new Promise((resolve, reject) => {
+        let params = {
+            Bucket: bucket,
+            CopySource: '/' + bucket + '/' + sourceKey,
+            ACL: 'public-read',
+            Key: destKey,
+        };
+
+        s3.copyObject(params, (err, data) => {
+            if(err) {
+                reject(err);
+            } else {
+                resolve(data);
+            }
+        });
+    });
+}
+
 async function uploadToS3(key, content) {
     console.log('Uploading ' + content.length + ' bytes to S3...');
     let s3 = new AWS.S3({apiVersion: '2006-03-01'});
@@ -127,6 +197,16 @@ async function uploadToS3(key, content) {
             }
         });
     });
+}
+
+async function initS3DirIfNeeded(targetScreenName, targetStatusId) {
+    try {
+        await s3GetObject('twitter-reply-tracker', targetScreenName + '/' + targetStatusId + '/elm.js');
+    } catch(e) {
+        console.log('support files not found - copying from skeleton directory');
+        let supportFiles = await s3ListObjects('twitter-reply-tracker', '__skel__');
+        await Promise.all(supportFiles.filter((key) => !key.endsWith('/')).map((key) => s3Copy('twitter-reply-tracker', key, targetScreenName + '/' + targetStatusId + '/')));
+    }
 }
 
 async function main(targetScreenName, targetStatusId) {
@@ -215,8 +295,9 @@ async function main(targetScreenName, targetStatusId) {
         'var savedIndexData =\n' +
         JSON.stringify(index) + ';';
 
-    return await uploadToS3(targetScreenName + '/' + targetStatusId + '/saved-index.js', content);
+    await uploadToS3(targetScreenName + '/' + targetStatusId + '/saved-index.js', content);
 
+    await initS3DirIfNeeded(targetScreenName, targetStatusId);
 }
 
 export
