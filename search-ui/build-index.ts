@@ -21,6 +21,8 @@
 import * as https from 'https';
 import * as process from 'process';
 import * as AWS from 'aws-sdk';
+import * as handlebars from 'handlebars';
+import * as Twitter from 'twitter';
 
 const TOKEN_WHITELIST = {
     'C#': true,
@@ -99,6 +101,77 @@ async function renderStatus(statusUrl) : Promise<string> {
     });
 }
 
+let decryptedKeys = {};
+
+async function kmsDecrypt(key : string) : Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+        if(decryptedKeys.hasOwnProperty(key)) {
+            resolve(decryptedKeys[key]);
+        } else {
+            if('AWS_LAMBDA_FUNCTION_NAME' in process.env) {
+                let kms = new AWS.KMS();
+                kms.decrypt({ CiphertextBlob: new Buffer(process.env[key], 'base64') }, (err, data) => {
+                    if(err) {
+                        reject(err);
+                        return;
+                    }
+                    decryptedKeys[key] = (data.Plaintext as Buffer).toString('ascii');
+                    resolve(decryptedKeys[key]);
+                });
+            } else {
+                resolve(process.env[key]);
+            }
+        }
+    });
+}
+
+async function getTwitterUser(screen_name) : Promise<any> {
+    let tw = new Twitter({
+      consumer_key: await kmsDecrypt('TWITTER_CONSUMER_KEY'),
+      consumer_secret: await kmsDecrypt('TWITTER_CONSUMER_SECRET'),
+      access_token_key: await kmsDecrypt('TWITTER_ACCESS_TOKEN'),
+      access_token_secret: await kmsDecrypt('TWITTER_ACCESS_TOKEN_SECRET'),
+    });
+
+    return new Promise((resolve, reject) => {
+        let params = {
+            screen_name: screen_name,
+        };
+
+        tw.get('users/lookup', params, (error, users, response) => {
+            if(error) {
+                return reject(error);
+            }
+            if(users.length > 0) {
+                resolve(users[0]);
+            } else {
+                resolve(null);
+            }
+        });
+    });
+}
+
+async function renderTemplate(targetScreenName, targetStatusId) {
+    let statusURL = 'https://twitter.com/' + targetScreenName + '/status/' + targetStatusId;
+
+    let [ renderedTweet, author ] = await Promise.all([
+        renderStatus(statusURL),
+        getTwitterUser(targetScreenName),
+    ]);
+
+    let authorName = author.name;
+
+    let templateObject = await s3GetObject('twitter-reply-tracker', 'template.html');
+    let templateSource = templateObject.Body.toString('ascii');
+
+    let template = handlebars.compile(templateSource);
+
+    return template({
+      author_name: authorName,
+      original_tweet: renderedTweet,
+    });
+}
+
 function customTrimmer(token) {
     if(TOKEN_WHITELIST.hasOwnProperty(token.toString().toUpperCase())) {
         return token;
@@ -107,7 +180,7 @@ function customTrimmer(token) {
     return token.update((s) => s.replace(/^\W+/, '').replace(/\W+$/, ''));
 }
 
-async function s3GetObject(bucket, key) {
+async function s3GetObject(bucket, key) : Promise<any> {
     let s3 = new AWS.S3({apiVersion: '2006-03-01'});
 
     return new Promise((resolve, reject) => {
@@ -206,6 +279,26 @@ async function initS3DirIfNeeded(targetScreenName, targetStatusId) {
         console.log('support files not found - copying from skeleton directory');
         let supportFiles = await s3ListObjects('twitter-reply-tracker', '__skel__');
         await Promise.all(supportFiles.filter((key) => !key.endsWith('/')).map((key) => s3Copy('twitter-reply-tracker', key, targetScreenName + '/' + targetStatusId + '/')));
+
+        console.log('rendering index page');
+
+        let html = await renderTemplate(targetScreenName, targetStatusId);
+        let s3 = new AWS.S3({apiVersion: '2006-03-01'});
+        await new Promise((resolve, reject) => {
+            s3.putObject({
+                Bucket: 'twitter-reply-tracker',
+                Key: targetScreenName + '/' + targetStatusId + '/index.html',
+                ACL: 'public-read',
+                ContentType: 'text/html',
+                Body: html,
+            }, (err, data) => {
+                if(err) {
+                    reject(err);
+                } else {
+                    resolve(data);
+                }
+            });
+        });
     }
 }
 
