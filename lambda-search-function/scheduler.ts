@@ -89,7 +89,7 @@ async function scheduleNewTweets() {
                 statusId: targetStatusId,
             };
 
-            promises.push(publishEvent(process.env.SNS_TOPIC_ARN, payload));
+            promises.push(publishEvent(process.env.SNS_TOPIC_ARN_NEW_TWEETS, payload));
         }
     }
 
@@ -106,7 +106,7 @@ async function scheduleIndexes() {
             statusId: targetStatusId,
         };
 
-        promises.push(publishEvent(process.env.SNS_TOPIC_ARN, payload));
+        promises.push(publishEvent(process.env.SNS_TOPIC_ARN_INDEXES, payload));
     }
 
     return Promise.all(promises);
