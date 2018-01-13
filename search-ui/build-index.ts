@@ -220,8 +220,21 @@ async function main(targetScreenName, targetStatusId) {
 }
 
 export
-function handler(context, event, callback) {
-    main(process.env.TARGET_SCREEN_NAME, process.env.TARGET_STATUS_ID).then(
+function handler(event, context, callback) {
+    let promises = [];
+
+    for(let record of event.Records) {
+        let payload = JSON.parse(record.Sns.Message);
+
+        if(payload.type == 'index') {
+            console.log('refreshing index for ' + payload.screenName + '/' + payload.statusId);
+            promises.push(main(payload.screenName, payload.statusId));
+        } else {
+            callback('Unrecognized request type: ' + payload.type);
+        }
+    }
+
+    Promise.all(promises).then(
         (result) => callback(null, result),
         (err)    => callback(err));
 }
