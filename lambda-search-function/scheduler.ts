@@ -44,8 +44,7 @@ async function publishEvent(payload) {
     });
 }
 
-export
-function handler(event, context, callback) {
+async function asyncHandler() {
     let promises = [];
 
     for(let [targetScreenName, targetStatusId] of targetTweets ) {
@@ -60,7 +59,12 @@ function handler(event, context, callback) {
         }
     }
 
-    Promise.all(promises).then(
+    return Promise.all(promises);
+}
+
+export
+function handler(event, context, callback) {
+    asyncHandler().then(
         (response) => callback(null, true),
         (err) => callback(err));
 }
