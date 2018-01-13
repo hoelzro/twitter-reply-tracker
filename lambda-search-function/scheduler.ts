@@ -45,7 +45,37 @@ async function publishEvent(payload) {
 }
 
 async function getTargetTweets() {
-    return Promise.resolve(targetTweets);
+    let db = new AWS.DynamoDB({apiVersion: '2012-08-10'});
+
+    return new Promise<any>((resolve, reject) => {
+        let params = {
+            TableName: 'twitter_reply_subscriptions',
+            FilterExpression: 'enabled = :enabled',
+            ExpressionAttributeValues: {
+                ':enabled': {
+                    BOOL: true
+                },
+            }
+        };
+
+        db.scan(params, (err, data) => {
+            if(err) {
+                reject(err);
+            } else {
+                if('LastEvaluatedKey' in data) {
+                    throw new Error("LastEvaluatedKey present in data - I don't know how to handle this!");
+                }
+
+                let targets = [];
+
+                for(let item of data.Items) {
+                    let screenNameAndRepliedToStatus = item.screen_name_and_replied_to_status.S;
+                    targets.push(screenNameAndRepliedToStatus.split('/'));
+                }
+                resolve(targets);
+            }
+        });
+    });
 }
 
 async function asyncHandler() {
