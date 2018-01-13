@@ -44,10 +44,14 @@ async function publishEvent(payload) {
     });
 }
 
+async function getTargetTweets() {
+    return Promise.resolve(targetTweets);
+}
+
 async function asyncHandler() {
     let promises = [];
 
-    for(let [targetScreenName, targetStatusId] of targetTweets ) {
+    for(let [targetScreenName, targetStatusId] of await getTargetTweets() ) {
         for(let payloadType of ['replies', 'quoted-replies']) {
             let payload = {
                 type: payloadType,
