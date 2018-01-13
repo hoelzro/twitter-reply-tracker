@@ -98,7 +98,11 @@ async function asyncHandler() {
 
 export
 function handler(event, context, callback) {
-    asyncHandler().then(
-        (response) => callback(null, true),
-        (err) => callback(err));
+    if(event.type == 'new-tweets') {
+        asyncHandler().then(
+            (response) => callback(null, true),
+            (err) => callback(err));
+    } else {
+        throw new Error('Unknown schedule type: ' + event.type);
+    }
 }
