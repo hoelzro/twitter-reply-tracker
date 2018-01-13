@@ -21,13 +21,6 @@
 import * as AWS from 'aws-sdk';
 import * as process from 'process';
 
-let targetTweets = [
-    ['sehurlburt', '889004724669661184'], // For people who are in a position to give help: Post to your timeline every now & then that you're open to questions. That makes a difference
-    ['sehurlburt', '899482493925023744'], // What are some hobbies you have that have no direct relation to your career? "Just for fun" things.
-    ['b0rk',       '904699186238693376'], // what is your absolute favorite developer tool you use?
-    ['joeerl',     '951357931559284736'], // I’m interested in the forgotten ideas of computer science. Needed for a talk.  Can you post examples of great CS ideas that have been largely forgotten.  Examples: Linda tuple spaces, Boyer-Moore algorithm
-];
-
 async function publishEvent(topicARN, payload) {
     let sns = new AWS.SNS({ apiVersion: '2010-03-31' });
 
