@@ -96,10 +96,30 @@ async function scheduleNewTweets() {
     return Promise.all(promises);
 }
 
+async function scheduleIndexes() {
+    let promises = [];
+
+    for(let [targetScreenName, targetStatusId] of await getTargetTweets() ) {
+        let payload = {
+            type: 'index',
+            screenName: targetScreenName,
+            statusId: targetStatusId,
+        };
+
+        promises.push(publishEvent(payload));
+    }
+
+    return Promise.all(promises);
+}
+
 export
 function handler(event, context, callback) {
     if(event.type == 'new-tweets') {
         scheduleNewTweets().then(
+            (response) => callback(null, true),
+            (err) => callback(err));
+    } else if(event.type == 'indexes') {
+        scheduleIndexes().then(
             (response) => callback(null, true),
             (err) => callback(err));
     } else {
