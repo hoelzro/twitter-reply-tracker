@@ -78,7 +78,7 @@ async function getTargetTweets() {
     });
 }
 
-async function asyncHandler() {
+async function scheduleNewTweets() {
     let promises = [];
 
     for(let [targetScreenName, targetStatusId] of await getTargetTweets() ) {
@@ -99,7 +99,7 @@ async function asyncHandler() {
 export
 function handler(event, context, callback) {
     if(event.type == 'new-tweets') {
-        asyncHandler().then(
+        scheduleNewTweets().then(
             (response) => callback(null, true),
             (err) => callback(err));
     } else {
