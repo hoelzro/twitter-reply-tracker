@@ -5,7 +5,6 @@
     "lib": ["ES2015", "dom"]
   },
   "files": [
-      "build-index.ts",
-      "generate-index-html.ts"
+      "build-index.ts"
   ]
 }
