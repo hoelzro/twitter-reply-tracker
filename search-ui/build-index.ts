@@ -38,7 +38,7 @@ AWS.config.update({
 
 async function getTableItems(db, targetScreenName : string, targetStatusId : string, tableName: string) : Promise<any> {
     function performScan(params, accum, resolve, reject, backoff = 100) {
-        db.scan(params, (err, data) => {
+        db.query(params, (err, data) => {
             if(err) {
                 if(err.code == 'ProvisionedThroughputExceededException') {
                     console.log('throughput exceeded - sleeping ' + backoff + 'ms');
@@ -66,7 +66,7 @@ async function getTableItems(db, targetScreenName : string, targetStatusId : str
     return new Promise<any>((resolve, reject) => {
         let params = {
             TableName: tableName,
-            FilterExpression: 'screen_name_and_replied_to_status = :s',
+            KeyConditionExpression: 'screen_name_and_replied_to_status = :s',
             ExpressionAttributeValues: {
                 ':s': {
                     S: targetScreenName + '/' + targetStatusId
