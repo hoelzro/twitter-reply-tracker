@@ -69,6 +69,9 @@ async function performSingleSearch(query : string, sinceId, maxId) {
           consumer_secret: await kmsDecrypt('TWITTER_CONSUMER_SECRET'),
           access_token_key: await kmsDecrypt('TWITTER_ACCESS_TOKEN'),
           access_token_secret: await kmsDecrypt('TWITTER_ACCESS_TOKEN_SECRET'),
+          request_options: {
+            timeout: 5000
+          },
         });
 
         let params : any = {
