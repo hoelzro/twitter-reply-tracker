@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "aws-sdk": "^2.96.0",
+    "clarify": "^2.1.0",
+    "trace": "^3.1.0",
     "twitter": "^1.7.1"
   }
 }

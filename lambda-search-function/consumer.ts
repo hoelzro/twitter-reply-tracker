@@ -18,6 +18,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require('trace');
+require('clarify');
+
 import { loadLastSinceId, insertIntoRepliesTable, updateLatestMaxId, performSearch } from './common';
 import * as AWS from 'aws-sdk';
 
