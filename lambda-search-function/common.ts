@@ -78,7 +78,8 @@ async function performSingleSearch(query : string, sinceId, maxId) {
             q: query,
             count: 100,
             since_id: sinceId,
-            tweet_mode: 'extended'
+            tweet_mode: 'extended',
+            result_type: 'recent',
         };
 
         if(maxId != null) {
