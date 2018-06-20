@@ -72,10 +72,12 @@ function handler(event, context, callback) {
         let payload = JSON.parse(record.Sns.Message);
 
         if(payload.type == 'replies') {
+            console.log('adding replies for ' + payload.screenName + '/' + payload.statusId);
             addReplies(context, payload.screenName, payload.statusId).then(
                 (result) => callback(null, result),
                 (err)    => callback(err));
         } else if(payload.type == 'quoted-replies') {
+            console.log('adding quoted replies for ' + payload.screenName + '/' + payload.statusId);
             addQuotedReplies(context, payload.screenName, payload.statusId).then(
                 (result) => callback(null, result),
                 (err)    => callback(err));

@@ -106,12 +106,18 @@ async function* performSearch(context : any, query : string, sinceId : string, o
 
         let results;
         try {
-            results = await performSingleSearch(query, sinceId, maxId);
+            console.log('querying twitter: ' + query + ' ' + sinceId);
+            let start = new Date();
+            results = await performSingleSearch(query, sinceId, maxId); // should be the minimum ID we saw in the previous request
+            let end = new Date();
+            console.log('got ' + results.length + ' result(s) in ' + (end.getTime() - start.getTime()) + 'ms');
         } catch(e) {
             if('length' in e && e[0].code == 88) {
                 console.log('rate limit exceeded - stopping operation');
                 break;
             }
+
+            console.log('got exception from Twitter API: ' + e);
             throw e;
         }
         yield* results.statuses;
@@ -180,6 +186,8 @@ function updateLatestMaxId(db, targetScreenName, targetStatusId, maxId, key : st
             }
         }, (err, _) => {
             if(err) {
+                console.log('failed to update maxID under ' + key + ' for ' + targetScreenName + '/' + targetStatusId);
+                console.log(err);
                 return reject(err);
             }
             return resolve(true);
@@ -227,6 +235,10 @@ function insertIntoRepliesTable(targetScreenName, targetStatusId, db, status) {
             }
         }, (err, _) => {
             if(err) {
+                console.log('failed to insert ' + status.id_str + ' for ' + targetScreenName + '/' + targetStatusId);
+                console.log(err);
+                console.log('text:', stripMentions(status.full_text, status.entities.user_mentions.map((mention) => mention.indices)));
+                console.log('screenname:', status.user.screen_name);
                 return reject(err);
             }
             return resolve(true);
