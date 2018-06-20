@@ -96,6 +96,12 @@ async function performSingleSearch(query : string, sinceId, maxId) {
     });
 }
 
+async function delay(ms) {
+    return new Promise(function(resolve, _) {
+        setTimeout(resolve, ms);
+    });
+}
+
 export
 async function* performSearch(context : any, query : string, sinceId : string, outMaxId : any) {
     let maxId : string = null;
@@ -115,6 +121,13 @@ async function* performSearch(context : any, query : string, sinceId : string, o
             if('length' in e && e[0].code == 88) {
                 console.log('rate limit exceeded - stopping operation');
                 break;
+            }
+
+            if(e.errno == 'ETIMEDOUT' || e.errno == 'ECONNRESET') {
+                console.log('Connection error: ' + e.errno);
+                console.log('Waiting a second and trying again...');
+                await delay(1000);
+                continue;
             }
 
             console.log('got exception from Twitter API: ' + e);
