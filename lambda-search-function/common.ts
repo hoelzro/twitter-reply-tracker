@@ -62,7 +62,7 @@ async function kmsDecrypt(key : string) : Promise<string> {
     });
 }
 
-async function performSingleSearch(query : string, sinceId, maxId) {
+async function performSingleSearch(query : string, sinceId, maxId) : Promise<SearchResults> {
     return new Promise<SearchResults>(async function(resolve, reject) {
         let tw = new Twitter({
           consumer_key: await kmsDecrypt('TWITTER_CONSUMER_KEY'),
@@ -110,13 +110,13 @@ async function* performSearch(context : any, query : string, sinceId : string, o
             break;
         }
 
-        let results;
+        let results : SearchResults;
         try {
             console.log('querying twitter: ' + query + ' ' + sinceId);
             let start = new Date();
             results = await performSingleSearch(query, sinceId, maxId); // should be the minimum ID we saw in the previous request
             let end = new Date();
-            console.log('got ' + results.length + ' result(s) in ' + (end.getTime() - start.getTime()) + 'ms');
+            console.log('got ' + results.statuses.length + ' result(s) in ' + (end.getTime() - start.getTime()) + 'ms');
         } catch(e) {
             if('length' in e && e[0].code == 88) {
                 console.log('rate limit exceeded - stopping operation');
