@@ -327,7 +327,9 @@ async function main(targetScreenName, targetStatusId) {
                 full_text: item.full_text.S
             }));
         } else {
-            let statusUrl = 'https://twitter.com/' + item.author.S + '/status/' + item.status_id.S;
+            let statusId = item.status_id.S.replace(/^0*/, '');
+
+            let statusUrl = 'https://twitter.com/' + item.author.S + '/status/' + statusId;
             documents.push(renderStatus(statusUrl).then((html) => {
                 if(html == null) {
                     return;
