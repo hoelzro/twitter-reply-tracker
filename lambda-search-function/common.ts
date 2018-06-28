@@ -237,7 +237,7 @@ function insertIntoRepliesTable(targetScreenName, targetStatusId, db, status) {
                     S: targetScreenName + '/' + targetStatusId
                 },
                 'status_id': {
-                    S: status.id_str
+                    S: status.id_str.padStart(32, '0')
                 },
                 'full_text': {
                     S: stripped
